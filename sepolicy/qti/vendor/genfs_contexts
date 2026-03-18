@@ -79,6 +79,22 @@ genfscon sysfs /devices/platform/soc/c440000.qcom,spmi/spmi-0/spmi0-05/c440000.q
 genfscon sysfs /devices/platform/soc/c440000.qcom,spmi/spmi-0/spmi0-05/c440000.qcom,spmi:qcom,pm8150l@5:qcom,wled@d800/backlight        u:object_r:sysfs_leds:s0
 genfscon sysfs /devices/platform/soc/soc:indicator_led/leds/charging                                                                    u:object_r:sysfs_leds:s0
 
+# Camera Torch
+genfscon sysfs /devices/platform/soc/c42d000.qcom,spmi/spmi-0/0-05/c42d000.qcom,spmi:qcom,pm6150l@5:qcom,leds@d300/leds/led:torch_0/brightness u:object_r:sysfs_torch:s0
+genfscon sysfs /devices/platform/soc/c42d000.qcom,spmi/spmi-0/0-05/c42d000.qcom,spmi:qcom,pm6150l@5:qcom,leds@d300/leds/led:torch_0/max_brightness u:object_r:sysfs_torch:s0
+genfscon sysfs /devices/platform/soc/c42d000.qcom,spmi/spmi-0/0-05/c42d000.qcom,spmi:qcom,pm6150l@5:qcom,leds@d300/leds/led:switch_0/brightness u:object_r:sysfs_torch:s0
+genfscon sysfs /devices/platform/soc/c42d000.qcom,spmi/spmi-0/0-05/c42d000.qcom,spmi:qcom,pm6150l@5:qcom,leds@d300/leds/led:switch_0/max_brightness u:object_r:sysfs_torch:s0
+genfscon sysfs /devices/platform/soc/c42d000.qcom,spmi/spmi-0/0-05/c42d000.qcom,spmi:qcom,pm6150l@5:qcom,leds@d300/leds/led:torch_1/brightness u:object_r:sysfs_torch:s0
+genfscon sysfs /devices/platform/soc/c42d000.qcom,spmi/spmi-0/0-05/c42d000.qcom,spmi:qcom,pm6150l@5:qcom,leds@d300/leds/led:torch_1/max_brightness u:object_r:sysfs_torch:s0
+genfscon sysfs /devices/platform/soc/c42d000.qcom,spmi/spmi-0/0-05/c42d000.qcom,spmi:qcom,pm6150l@5:qcom,leds@d300/leds/led:switch_1/brightness u:object_r:sysfs_torch:s0
+genfscon sysfs /devices/platform/soc/c42d000.qcom,spmi/spmi-0/0-05/c42d000.qcom,spmi:qcom,pm6150l@5:qcom,leds@d300/leds/led:switch_1/max_brightness u:object_r:sysfs_torch:s0
+genfscon sysfs /devices/platform/soc/c42d000.qcom,spmi/spmi-0/0-05/c42d000.qcom,spmi:qcom,pm6150l@5:qcom,leds@d300/leds/led:flash_0/brightness u:object_r:sysfs_torch:s0
+genfscon sysfs /devices/platform/soc/c42d000.qcom,spmi/spmi-0/0-05/c42d000.qcom,spmi:qcom,pm6150l@5:qcom,leds@d300/leds/led:flash_0/max_brightness u:object_r:sysfs_torch:s0
+genfscon sysfs /devices/platform/soc/c42d000.qcom,spmi/spmi-0/0-05/c42d000.qcom,spmi:qcom,pm6150l@5:qcom,leds@d300/leds/led:switch_2/brightness u:object_r:sysfs_torch:s0
+genfscon sysfs /devices/platform/soc/c42d000.qcom,spmi/spmi-0/0-05/c42d000.qcom,spmi:qcom,pm6150l@5:qcom,leds@d300/leds/led:switch_2/max_brightness u:object_r:sysfs_torch:s0
+genfscon sysfs /devices/platform/soc/c42d000.qcom,spmi/spmi-0/0-05/c42d000.qcom,spmi:qcom,pm6150l@5:qcom,leds@d300/leds/led:flash_1/brightness u:object_r:sysfs_torch:s0
+genfscon sysfs /devices/platform/soc/c42d000.qcom,spmi/spmi-0/0-05/c42d000.qcom,spmi:qcom,pm6150l@5:qcom,leds@d300/leds/led:flash_1/max_brightness u:object_r:sysfs_torch:s0
+
 # Motorola
 genfscon proc /bootinfo                                u:object_r:vendor_proc_moto_boot:s0
 genfscon proc /config                                  u:object_r:vendor_proc_hw:s0
