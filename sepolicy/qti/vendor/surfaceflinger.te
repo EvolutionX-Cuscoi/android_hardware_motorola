@@ -1,0 +1,1 @@
+allow surfaceflinger vendor_sysfs_lhbm:file rw_file_perms;

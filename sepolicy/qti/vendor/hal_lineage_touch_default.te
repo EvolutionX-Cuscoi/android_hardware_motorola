@@ -1,1 +1,2 @@
 rw_dir_file(hal_lineage_touch_default, vendor_sysfs_touchpanel)
+allow hal_lineage_touch_default sysfs_touch_polling:file rw_file_perms;

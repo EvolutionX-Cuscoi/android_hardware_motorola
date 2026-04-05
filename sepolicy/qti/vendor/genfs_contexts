@@ -5,6 +5,7 @@ genfscon sysfs /devices/virtual/capsense    u:object_r:vendor_sysfs_capsense:s0
 # Display
 genfscon sysfs /devices/platform/soc/ae00000.qcom,mdss_mdp/drm/card0/card0-DSI-1/dpms       u:object_r:vendor_sysfs_graphics:s0
 genfscon sysfs /devices/platform/soc/ae00000.qcom,mdss_mdp/drm/card0/card0-DSI-1/panelDC    u:object_r:vendor_sysfs_graphics:s0
+genfscon sysfs /devices/platform/soc/ae00000.qcom,mdss_mdp/drm/card0/card0-DSI-1/local_hbm  u:object_r:vendor_sysfs_lhbm:s0
 
 # Extcon
 genfscon sysfs /devices/platform/soc/soc:mmi,discrete-charging/extcon    u:object_r:sysfs_extcon:s0
@@ -128,6 +129,8 @@ genfscon sysfs /devices/platform/soc/a94000.spi/spi_master/spi0/spi0.0/touchscre
 genfscon sysfs /devices/platform/soc/ac0000.qcom,qupv3_1_geni_se/a8c000.spi/spi_master/spi0/spi0.0/touchscreen    u:object_r:vendor_sysfs_touchpanel:s0
 genfscon sysfs /devices/platform/soc/ac0000.qcom,qupv3_1_geni_se/a90000.spi/spi_master/spi0/spi0.0/touchscreen    u:object_r:vendor_sysfs_touchpanel:s0
 genfscon sysfs /devices/virtual/touchscreen                                                                       u:object_r:vendor_sysfs_touchpanel:s0
+genfscon sysfs /devices/platform/soc/ac0000.qcom,qupv3_1_geni_se/a8c000.spi/spi_master/spi0/spi0.0/touchscreen/primary/gesture u:object_r:sysfs_goodix_gesture:s0
+genfscon sysfs /devices/platform/soc/ac0000.qcom,qupv3_1_geni_se/a8c000.spi/spi_master/spi0/spi0.0/touchscreen/primary/interpolation u:object_r:sysfs_touch_polling:s0
 
 # USB
 genfscon sysfs /devices/platform/soc/soc:mmi,discrete-charging/power_supply/pc_port    u:object_r:vendor_sysfs_usb_supply:s0
@@ -250,3 +253,6 @@ genfscon sysfs /devices/virtual/input/input5/wakeup                             
 genfscon sysfs /devices/virtual/input/input7/wakeup                                                                                                                             u:object_r:sysfs_wakeup:s0
 genfscon sysfs /devices/virtual/input/input8/wakeup                                                                                                                             u:object_r:sysfs_wakeup:s0
 genfscon sysfs /devices/virtual/misc/focaltech_fp/wakeup                                                                                                                        u:object_r:sysfs_wakeup:s0
+genfscon sysfs /devices/platform/soc/ac0000.qcom,qupv3_1_geni_se/a8c000.spi/spi_master/spi0/spi0.0/wakeup u:object_r:sysfs_wakeup:s0
+genfscon sysfs /devices/platform/soc/soc:jiiov_fp/wakeup u:object_r:sysfs_wakeup:s0
+
