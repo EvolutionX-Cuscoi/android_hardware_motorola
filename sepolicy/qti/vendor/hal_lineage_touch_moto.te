@@ -1,0 +1,11 @@
+# Define the domain and the executable type
+type hal_lineage_touch_moto, domain;
+type hal_lineage_touch_moto_exec, exec_type, vendor_file_type, file_type;
+
+# Allow init to transition to the service domain upon execution
+init_daemon_domain(hal_lineage_touch_moto)
+
+# Grant this domain the standard permissions for a Lineage touch HAL
+hal_server_domain(hal_lineage_touch_moto, hal_lineage_touch)
+# Allow the domain to use Binder to communicate with servicemanager (Required for AIDL HALs)
+binder_use(hal_lineage_touch_moto)
