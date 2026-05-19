@@ -123,6 +123,7 @@
 
 # Touch HAL
 /vendor/bin/hw/vendor\.lineage\.touch-service\.motorola    u:object_r:hal_lineage_touch_default_exec:s0
+/vendor/bin/hw/vendor\.lineage\.touch-service\.moto_sm7435    u:object_r:hal_lineage_touch_moto_exec:s0
 
 # LiveDisplay HAL
 /(vendor|system/vendor)/bin/hw/vendor\.livedisplay\.cuscoi-service\.sdm          u:object_r:hal_lineage_livedisplay_qti_exec:s0

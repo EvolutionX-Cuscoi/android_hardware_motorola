@@ -115,7 +115,7 @@ class SysfsPollingOneShotSensor : public OneShotSensor {
 };
 
 inline std::string getTouchscreenBasePath() {
-    static constexpr std::string_view socs[] = {"4a80000.spi", "998000.spi", "a8c000.spi",
+    static constexpr std::string_view socs[] = {"4a80000.spi", "998000.spi", "a8c000.spi", "ac0000.qcom,qupv3_1_geni_se/a8c000.spi",
                                                 "a94000.spi", "a94000.i2c"};
     static constexpr std::string_view spis[] = {"spi0.0", "spi0.1"};
     static constexpr std::string_view displays[] = {"NVT-ts", "primary", "secondary"};
