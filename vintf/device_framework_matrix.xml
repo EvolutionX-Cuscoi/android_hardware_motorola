@@ -164,4 +164,12 @@
             <instance>default</instance>
         </interface>
     </hal>
+    <hal format="aidl">
+        <name>com.motorola.hardware.display.panel</name>
+        <version>1-2</version>
+        <interface>
+            <name>IDisplayPanel</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
 </compatibility-matrix>
