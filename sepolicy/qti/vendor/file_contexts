@@ -125,9 +125,7 @@
 /vendor/bin/hw/vendor\.lineage\.touch-service\.motorola    u:object_r:hal_lineage_touch_default_exec:s0
 /vendor/bin/hw/vendor\.lineage\.touch-service\.moto_sm7435    u:object_r:hal_lineage_touch_moto_exec:s0
 
-# LiveDisplay HAL
-/(vendor|system/vendor)/bin/hw/vendor\.livedisplay\.cuscoi-service\.sdm          u:object_r:hal_lineage_livedisplay_qti_exec:s0
-/(vendor|system/vendor)/bin/hw/vendor\.livedisplay\.cuscoi-service\.sysfs         u:object_r:hal_lineage_livedisplay_sysfs_exec:s0
+/vendor/bin/hw/com\.motorola\.hardware\.display\.panel-service    u:object_r:hal_motorola_panel_exec:s0
 
 # Touchscreen
 /sys/devices/platform/soc/a94000\.i2c/i2c-2/2-0049/double_click    u:object_r:vendor_sysfs_touchpanel:s0

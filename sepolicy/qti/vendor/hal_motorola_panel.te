@@ -1,0 +1,19 @@
+# Define the domain and the executable type
+type hal_motorola_panel, domain;
+type hal_motorola_panel_exec, exec_type, vendor_file_type, file_type;
+
+# Allow init to transition to the service domain upon execution
+init_daemon_domain(hal_motorola_panel)
+
+# Allow the domain to use Binder to communicate with servicemanager (Required for AIDL)
+binder_use(hal_motorola_panel)
+# Allow the panel HAL to register its specific AIDL service
+add_service(hal_motorola_panel, hal_moto_panel_aidl_service)
+# Allow the HAL to read standard sysfs nodes (fixes the panelName denial)
+r_dir_file(hal_motorola_panel, sysfs)
+
+# Allow the HAL to read the devicetree chosen nodes
+r_dir_file(hal_motorola_panel, sysfs_dt_chosen)
+
+# Allow the HAL to communicate over the vendor binder network
+vndbinder_use(hal_motorola_panel)
