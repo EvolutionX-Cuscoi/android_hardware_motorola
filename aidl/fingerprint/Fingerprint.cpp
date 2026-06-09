@@ -14,7 +14,10 @@
 #include <android-base/logging.h>
 #include <android-base/properties.h>
 #include <android-base/strings.h>
+#include <log/log.h>
+#include <unistd.h>
 #include <dlfcn.h>
+#include "anc_wrapper.h"
 
 using ::android::base::SetProperty;
 
@@ -137,12 +140,22 @@ fingerprint_device_t* Fingerprint::openFingerprintHal(const char* class_name,
         ALOGI("Opening anc.hal.so directly");
         void* anc_handle = dlopen("anc.hal.so", RTLD_NOW);
         if (anc_handle) {
-            int (*init)(void) = reinterpret_cast<int (*)(void)>(dlsym(anc_handle, "InitFingerprintDevice"));
-            fingerprint_device_t* (*get_dev)(void) = reinterpret_cast<fingerprint_device_t* (*)(void)>(dlsym(anc_handle, "GetFingerprintDevice"));
+            int (*init)(void*, const char*) = reinterpret_cast<int (*)(void*, const char*)>(dlsym(anc_handle, "InitFingerprintDevice"));
+            void* (*get_dev)(void) = reinterpret_cast<void* (*)(void)>(dlsym(anc_handle, "GetFingerprintDevice"));
             if (init && get_dev) {
-                if (init() == 0) {
-                    fingerprint_device_t* dev = get_dev();
-                    if (dev) {
+                void* jiiov_dev = get_dev();
+                if (jiiov_dev) {
+                    int ret = init(jiiov_dev, "ancapp64");
+                    if (ret != 0) {
+                        ALOGW("ancapp64 failed to init, trying anc0307");
+                        ret = init(jiiov_dev, "anc0307");
+                    }
+                    if (ret == 0) {
+                        fingerprint_device_t* dev = create_anc_wrapper(anc_handle, jiiov_dev);
+                        if (!dev) {
+                            ALOGE("Failed to create anc_wrapper");
+                            return nullptr;
+                        }
                         if (dev->set_notify(dev, Fingerprint::notify) != 0) {
                             ALOGE("Can't register fingerprint module callback for anc.hal.so");
                             return nullptr;
@@ -150,10 +163,10 @@ fingerprint_device_t* Fingerprint::openFingerprintHal(const char* class_name,
                         ALOGI("Opened anc.hal.so successfully");
                         return dev;
                     } else {
-                        ALOGE("GetFingerprintDevice returned null");
+                        ALOGE("InitFingerprintDevice failed");
                     }
                 } else {
-                    ALOGE("InitFingerprintDevice failed");
+                    ALOGE("GetFingerprintDevice returned null");
                 }
             } else {
                 ALOGE("Failed to find InitFingerprintDevice or GetFingerprintDevice in anc.hal.so");
