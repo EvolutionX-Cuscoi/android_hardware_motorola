@@ -14,6 +14,7 @@
 #include <android-base/logging.h>
 #include <android-base/properties.h>
 #include <android-base/strings.h>
+#include <dlfcn.h>
 
 using ::android::base::SetProperty;
 
@@ -34,7 +35,7 @@ typedef struct fingerprint_hal {
 
 static const fingerprint_hal_t kModules[] = {
         {"fortsense"},  {"fpc"},         {"fpc_fod"}, {"goodix"}, {"goodix:gf_fingerprint"},
-        {"goodix_fod"}, {"goodix_fod6"}, {"silead"},  {"syna"},
+        {"goodix_fod"}, {"goodix_fod6"}, {"silead"},  {"syna"}, {"anc"},
 };
 
 }  // namespace
@@ -132,6 +133,37 @@ Fingerprint::~Fingerprint() {
 
 fingerprint_device_t* Fingerprint::openFingerprintHal(const char* class_name,
                                                       const char* module_id) {
+    if (strcmp(class_name, "anc") == 0) {
+        ALOGI("Opening anc.hal.so directly");
+        void* anc_handle = dlopen("anc.hal.so", RTLD_NOW);
+        if (anc_handle) {
+            int (*init)(void) = reinterpret_cast<int (*)(void)>(dlsym(anc_handle, "InitFingerprintDevice"));
+            fingerprint_device_t* (*get_dev)(void) = reinterpret_cast<fingerprint_device_t* (*)(void)>(dlsym(anc_handle, "GetFingerprintDevice"));
+            if (init && get_dev) {
+                if (init() == 0) {
+                    fingerprint_device_t* dev = get_dev();
+                    if (dev) {
+                        if (dev->set_notify(dev, Fingerprint::notify) != 0) {
+                            ALOGE("Can't register fingerprint module callback for anc.hal.so");
+                            return nullptr;
+                        }
+                        ALOGI("Opened anc.hal.so successfully");
+                        return dev;
+                    } else {
+                        ALOGE("GetFingerprintDevice returned null");
+                    }
+                } else {
+                    ALOGE("InitFingerprintDevice failed");
+                }
+            } else {
+                ALOGE("Failed to find InitFingerprintDevice or GetFingerprintDevice in anc.hal.so");
+            }
+        } else {
+            ALOGE("Failed to dlopen anc.hal.so: %s", dlerror());
+        }
+        return nullptr;
+    }
+
     const hw_module_t* hw_mdl = nullptr;
 
     ALOGD("Opening fingerprint hal library...");
