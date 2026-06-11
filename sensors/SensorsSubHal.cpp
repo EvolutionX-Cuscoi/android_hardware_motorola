@@ -1,7 +1,17 @@
 /*
- * SPDX-FileCopyrightText: 2019 The Android Open Source Project
- * SPDX-FileCopyrightText: The LineageOS Project
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (C) 2019 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "SensorsSubHal.h"
@@ -24,12 +34,15 @@ using ::android::hardware::Void;
 using ::android::hardware::sensors::V2_0::implementation::ScopedWakelock;
 
 SensorsSubHal::SensorsSubHal() : mCallback(nullptr), mNextHandle(1) {
-#ifdef ENABLE_DOUBLE_TAP
-    AddSensor<DoubleTapSensor>();
-#endif
-#ifdef ENABLE_UDFPS
-    AddSensor<UdfpsSensor>();
-#endif
+    if (property_get_bool("ro.vendor.sensors.motorola.double_tap", false)) {
+        AddSensor<DoubleTapSensor>();
+    }
+    if (property_get_bool("ro.vendor.sensors.motorola.single_tap", false)) {
+        AddSensor<SingleTapSensor>();
+    }
+    if (property_get_bool("ro.vendor.sensors.motorola.udfps", false)) {
+        AddSensor<UdfpsSensor>();
+    }
 }
 
 Return<void> SensorsSubHal::getSensorsList_2_1(ISensors::getSensorsList_2_1_cb _hidl_cb) {
