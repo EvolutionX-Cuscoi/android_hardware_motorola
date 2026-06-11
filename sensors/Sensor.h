@@ -1,7 +1,17 @@
 /*
- * SPDX-FileCopyrightText: 2019 The Android Open Source Project
- * SPDX-FileCopyrightText: The LineageOS Project
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (C) 2019 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #pragma once
@@ -12,7 +22,6 @@
 #include <unistd.h>
 
 #include <condition_variable>
-#include <filesystem>
 #include <fstream>
 #include <memory>
 #include <mutex>
@@ -41,7 +50,6 @@ class ISensorsEventCallback {
 class Sensor {
   public:
     Sensor(int32_t sensorHandle, ISensorsEventCallback* callback);
-    virtual bool opened() { return true; }
     virtual ~Sensor();
 
     const SensorInfo& getSensorInfo() const;
@@ -90,7 +98,6 @@ class SysfsPollingOneShotSensor : public OneShotSensor {
                               const std::string& pollPath, const std::string& enablePath,
                               const std::string& name, const std::string& typeAsString,
                               SensorType type);
-    virtual bool opened();
     virtual ~SysfsPollingOneShotSensor() override;
 
     virtual void activate(bool enable) override;
@@ -112,70 +119,48 @@ class SysfsPollingOneShotSensor : public OneShotSensor {
     struct pollfd mPolls[2];
     int mWaitPipeFd[2];
     int mPollFd;
+    std::string mEnablePath;
+    std::once_flag mEnableOpenOnce;
 };
-
-inline std::string getTouchscreenBasePath() {
-    static constexpr std::string_view socs[] = {"4a80000.spi", "998000.spi", "a8c000.spi", "ac0000.qcom,qupv3_1_geni_se/a8c000.spi",
-                                                "a94000.spi", "a94000.i2c"};
-    static constexpr std::string_view spis[] = {"spi0.0", "spi0.1"};
-    static constexpr std::string_view displays[] = {"NVT-ts", "primary", "secondary"};
-
-    for (auto soc : socs) {
-        std::string path = "/sys/devices/platform/soc/" + std::string(soc);
-        if (soc.find(".i2c") != std::string_view::npos) {
-            path += "/i2c-2/2-0049";
-        } else {
-            bool found = false;
-            for (auto spi : spis) {
-                std::string spiPath = path + "/spi_master/spi0/" + std::string(spi);
-                if (std::filesystem::exists(spiPath)) {
-                    path = spiPath;
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) continue;
-        }
-
-        for (auto display : displays) {
-            std::string displayPath = path + "/touchscreen/" + std::string(display) + "/";
-            if (std::filesystem::exists(displayPath)) return displayPath;
-        }
-    }
-
-    return "/sys/class/touchscreen/primary/";
-}
-
-const std::string kTsPath = getTouchscreenBasePath();
-
-constexpr int32_t SENSOR_TYPE_BASE = static_cast<int32_t>(SensorType::DEVICE_PRIVATE_BASE) + 100;
-
-#ifdef ENABLE_DOUBLE_TAP
-const std::string kTsDoubleTapPressedPath = kTsPath + "double_tap_pressed";
-const std::string kTsDoubleTapEnabledPath = kTsPath + "double_tap_enabled";
 
 class DoubleTapSensor : public SysfsPollingOneShotSensor {
   public:
     DoubleTapSensor(int32_t sensorHandle, ISensorsEventCallback* callback)
-        : SysfsPollingOneShotSensor(sensorHandle, callback, kTsDoubleTapPressedPath,
-                                    kTsDoubleTapEnabledPath, "Double Tap Sensor",
-                                    "org.lineageos.sensor.double_tap",
-                                    static_cast<SensorType>(SENSOR_TYPE_BASE + 1)) {}
+        : SysfsPollingOneShotSensor(
+                  sensorHandle, callback, "/sys/devices/platform/soc/ac0000.qcom,qupv3_1_geni_se/a8c000.spi/spi_master/spi0/spi0.0/touchscreen/primary/double_tap_pressed",
+                  "/sys/devices/platform/soc/ac0000.qcom,qupv3_1_geni_se/a8c000.spi/spi_master/spi0/spi0.0/touchscreen/primary/double_tap_enabled", "Double Tap Sensor",
+                  "org.lineageos.sensor.double_tap",
+                  static_cast<SensorType>(static_cast<int32_t>(SensorType::DEVICE_PRIVATE_BASE) +
+                                          1)) {}
 };
-#endif
 
-#ifdef ENABLE_UDFPS
-const std::string kTsUdfpsPressedPath = kTsPath + "udfps_pressed";
-const std::string kTsUdfpsEnabledPath = kTsPath + "udfps_enabled";
+class SingleTapSensor : public SysfsPollingOneShotSensor {
+  public:
+    SingleTapSensor(int32_t sensorHandle, ISensorsEventCallback* callback)
+        : SysfsPollingOneShotSensor(
+                  sensorHandle, callback, "/sys/devices/platform/soc/ac0000.qcom,qupv3_1_geni_se/a8c000.spi/spi_master/spi0/spi0.0/touchscreen/primary/single_tap_pressed",
+                  "/sys/devices/platform/soc/ac0000.qcom,qupv3_1_geni_se/a8c000.spi/spi_master/spi0/spi0.0/touchscreen/primary/single_tap_enabled", "Single Tap Sensor",
+                  "org.lineageos.sensor.single_tap",
+                  static_cast<SensorType>(static_cast<int32_t>(SensorType::DEVICE_PRIVATE_BASE) +
+                                          2)) {}
+};
 
 class UdfpsSensor : public SysfsPollingOneShotSensor {
   public:
     UdfpsSensor(int32_t sensorHandle, ISensorsEventCallback* callback)
         : SysfsPollingOneShotSensor(
-                  sensorHandle, callback, kTsUdfpsPressedPath, kTsUdfpsEnabledPath, "UDFPS Sensor",
-                  "org.lineageos.sensor.udfps", static_cast<SensorType>(SENSOR_TYPE_BASE + 2)) {}
+                  sensorHandle, callback, "/sys/devices/platform/soc/ac0000.qcom,qupv3_1_geni_se/a8c000.spi/spi_master/spi0/spi0.0/touchscreen/primary/udfps_pressed",
+                  "/sys/devices/platform/soc/ac0000.qcom,qupv3_1_geni_se/a8c000.spi/spi_master/spi0/spi0.0/touchscreen/primary/udfps_enabled", "UDFPS Sensor",
+                  "org.lineageos.sensor.udfps",
+                  static_cast<SensorType>(static_cast<int32_t>(SensorType::DEVICE_PRIVATE_BASE) +
+                                          3)) {}
+    virtual void fillEventData(Event& event);
+    virtual bool readFd(const int fd);
+
+  private:
+    int mScreenX;
+    int mScreenY;
 };
-#endif
 
 }  // namespace implementation
 }  // namespace subhal
