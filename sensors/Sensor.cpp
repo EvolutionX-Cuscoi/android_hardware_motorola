@@ -1,7 +1,17 @@
 /*
- * SPDX-FileCopyrightText: 2019 The Android Open Source Project
- * SPDX-FileCopyrightText: The LineageOS Project
- * SPDX-License-Identifier: Apache-2.0
+ * Copyright (C) 2019 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "Sensor.h"
@@ -211,7 +221,7 @@ SysfsPollingOneShotSensor::SysfsPollingOneShotSensor(
         int32_t sensorHandle, ISensorsEventCallback* callback, const std::string& pollPath,
         const std::string& enablePath, const std::string& name, const std::string& typeAsString,
         SensorType type)
-    : OneShotSensor(sensorHandle, callback) {
+    : OneShotSensor(sensorHandle, callback), mEnablePath(enablePath) {
     mSensorInfo.name = name;
     mSensorInfo.type = type;
     mSensorInfo.typeAsString = typeAsString;
@@ -220,12 +230,6 @@ SysfsPollingOneShotSensor::SysfsPollingOneShotSensor(
     mSensorInfo.power = 0;
     mSensorInfo.flags |= SensorFlagBits::WAKE_UP;
 
-    mEnableStream.open(enablePath);
-    if (!mEnableStream) {
-        ALOGE("failed to open enable path %s", enablePath.c_str());
-        return;
-    }
-
     int rc;
 
     rc = pipe(mWaitPipeFd);
@@ -233,12 +237,15 @@ SysfsPollingOneShotSensor::SysfsPollingOneShotSensor(
         mWaitPipeFd[0] = -1;
         mWaitPipeFd[1] = -1;
         ALOGE("failed to open wait pipe: %d", rc);
-        return;
     }
 
     mPollFd = open(pollPath.c_str(), O_RDONLY);
     if (mPollFd < 0) {
-        ALOGE("failed to open poll path %s: %d", pollPath.c_str(), mPollFd);
+        ALOGE("failed to open poll fd: %d", mPollFd);
+    }
+
+    if (mWaitPipeFd[0] < 0 || mWaitPipeFd[1] < 0 || mPollFd < 0) {
+        mStopThread = true;
         return;
     }
 
@@ -253,17 +260,17 @@ SysfsPollingOneShotSensor::SysfsPollingOneShotSensor(
     };
 }
 
-bool SysfsPollingOneShotSensor::opened() {
-    return mEnableStream && mWaitPipeFd[0] >= 0 && mWaitPipeFd[1] >= 0 && mPollFd >= 0;
-}
-
 SysfsPollingOneShotSensor::~SysfsPollingOneShotSensor() {
     interruptPoll();
 }
 
 void SysfsPollingOneShotSensor::writeEnable(bool enable) {
+    std::call_once(mEnableOpenOnce, [&] { mEnableStream.open(mEnablePath); });
+
     if (mEnableStream) {
         mEnableStream << (enable ? '1' : '0') << std::flush;
+    } else {
+        ALOGE("Failed to write enable to %s", mEnablePath.c_str());
     }
 }
 
@@ -354,6 +361,40 @@ void SysfsPollingOneShotSensor::fillEventData(Event& event) {
 
 bool SysfsPollingOneShotSensor::readFd(const int fd) {
     return readBool(fd, true /* seek */);
+}
+
+void UdfpsSensor::fillEventData(Event& event) {
+    event.u.data[0] = mScreenX;
+    event.u.data[1] = mScreenY;
+}
+
+bool UdfpsSensor::readFd(const int fd) {
+    char buffer[512];
+    int state = 0;
+    int rc;
+
+    rc = lseek(fd, 0, SEEK_SET);
+    if (rc < 0) {
+        ALOGE("failed to seek: %d", rc);
+        return false;
+    }
+    rc = read(fd, &buffer, sizeof(buffer));
+    if (rc < 0) {
+        ALOGE("failed to read state: %d", rc);
+        return false;
+    }
+    rc = sscanf(buffer, "%d,%d,%d", &mScreenX, &mScreenY, &state);
+    if (rc == 1) {
+        // If fod_press_status contains only one value,
+        // assume that just reports the state
+        state = mScreenX;
+        mScreenX = 0;
+        mScreenY = 0;
+    } else if (rc < 3) {
+        ALOGE("failed to parse fp state: %d", rc);
+        return false;
+    }
+    return state > 0;
 }
 
 }  // namespace implementation
