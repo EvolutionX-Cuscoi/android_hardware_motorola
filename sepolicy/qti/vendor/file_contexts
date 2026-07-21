@@ -130,6 +130,7 @@
 /vendor/bin/hw/com\.motorola\.hardware\.display\.panel-service    u:object_r:hal_motorola_panel_exec:s0
 
 # Touchscreen
+/sys/class/touchscreen(/.*)?                                          u:object_r:vendor_sysfs_touchpanel:s0
 /sys/devices/platform/soc/a94000\.i2c/i2c-2/2-0049/double_click    u:object_r:vendor_sysfs_touchpanel:s0
 /sys/devices/platform/soc/a94000\.i2c/i2c-2/2-0049/single_click    u:object_r:vendor_sysfs_touchpanel:s0
 
