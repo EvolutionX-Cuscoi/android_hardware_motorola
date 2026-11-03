@@ -1,0 +1,1 @@
+allow hal_wifi_supplicant_server vendor_cutback_socket:sock_file write;
